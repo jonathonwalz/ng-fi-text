@@ -6,8 +6,6 @@ angular.module('ng-fi-text', [])
       restrict: 'A',
       scope: {ngFiText: '@', ngFiTextHtml: '@'},
       link: function postLink(scope, element, attrs) {
-
-
         if (!window.jQuery) {
           console.error('ng-fi-text needs jQuery to work. Sory :(');
           return;
@@ -16,8 +14,6 @@ angular.module('ng-fi-text', [])
         // Options
         var rotate = attrs.ngFiTextRotate || false;
         var maxFontSize = attrs.ngFiTextMaxFontSize || false;
-        // var minFontSize = attrs.ngFiTextMinFontSize || false;
-        //var lineHeightMultiplier = attrs.ngFiTextLineHeightMultiplier || false;
         var implementationType = attrs.hasOwnProperty('ngFiTextHtml') ? 'html' : 'text';
 
 
@@ -73,7 +69,6 @@ angular.module('ng-fi-text', [])
 
           var elementParent = textElem.parent();
           var elemParentHeight = elementParent.height();
-          //var elemParentWidth = elementParent.width();
 
           var elemHeight;
           var heightDiff;
@@ -98,15 +93,10 @@ angular.module('ng-fi-text', [])
 
 
           function grossCorrection(executionNumber) {
-
             if (currLoop > loopLimiter) {
-              //console.log('no more loops :(');
-              //console.log('----------------------------------------- no + loops');
               onFinished(newFontSize);
               return;
             }
-
-            onLoopStarted();
 
             textElem.css('font-size', newFontSize + 'px');
             if (implementationType === 'html') {
@@ -135,14 +125,12 @@ angular.module('ng-fi-text', [])
               if (prevDirection && prevDirection !== direction) {
 
                 if (preLastSameDirectionDiff === heightDiff) {
-                  //console.log('------------------ deberia parar -----------');
                   if (newFontSize !== lesserSize) {
                     textElem.css('font-size', lesserSize + 'px');
                     if (implementationType === 'html') {
                       textElem.children().css('font-size', lesserSize + 'px');
                     }
                   }
-                  //console.log('----------------------------------------- dp');
                   onFinished(newFontSize);
                   return;
 
@@ -160,41 +148,21 @@ angular.module('ng-fi-text', [])
               prevDirection = direction;
               definitiveCorrection = baseCorrection * correctionMultiplier * direction;
               newFontSize = newFontSize + definitiveCorrection;
-
-              /*
-               console.log(
-               'l'+currLoop +
-               ' | LSD:'+lastSameDirectionDiff+
-               ' | ldif:'+lesserDiff+
-               ' | elHght:'+elemHeight +
-               ' | hDiff:'+heightDiff +
-               ' | cx:'+correctionMultiplier+
-               ' | def_corr:'+definitiveCorrection +
-               ' | newFontSize:'+newFontSize +
-               '');
-               */
-
               currLoop++;
 
 
               if (Math.abs(heightDiff) > heightTolerance) {
                 grossCorrection(executionOdometer);
               } else {
-                //console.log('-----------------------------------------end');
                 onFinished(newFontSize);
               }
             }, 0);
-          }//gross
+          } // grossCorrection
           grossCorrection(executionOdometer);
-
         } // executeMagic
 
         function onStarted() {
           textElem.css('visibility', 'hidden');
-        }
-
-        function onLoopStarted() {
-
         }
 
         function onFinished(finalFontSize) {
