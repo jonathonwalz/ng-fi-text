@@ -4,6 +4,8 @@
 
 ---------
 
+Note: This fork implements functionality forcing the html to fit on a single line.
+
 ####[You can see THE DEMO HERE][1]
 
 [1]:http://leandropio.github.io/ng-fi-text/
