@@ -4,7 +4,7 @@ angular.module('ng-fi-text', [])
 
     return {
       restrict: 'A',
-      scope: {ngFiText: '@', ngFiTextHtml: '@'},
+      scope: {ngFiText: '@'},
       link: function postLink(scope, element, attrs) {
         if (!window.jQuery) {
           console.error('ng-fi-text needs jQuery to work. Sory :(');
