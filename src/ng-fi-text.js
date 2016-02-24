@@ -11,16 +11,12 @@ angular.module('ng-fi-text', [])
           return;
         }
 
-        // Options
-        var implementationType = attrs.hasOwnProperty('ngFiTextHtml') ? 'html' : 'text';
-
         // Internal Options
         var tolerance = 3;
         var fontSize = 10;
         var loopLimiter = 25; // higher is more accurate but increases process. Min 5~6
 
         var executionOdometer = 0;
-
 
         // Creating the element
         var textElem = angular.element('<div />').attr('style',
@@ -30,23 +26,17 @@ angular.module('ng-fi-text', [])
           'position: absolute;' +
           'text-align:center;' +
           'left:0px;' +
-          'top: 0px;'
+          'top: 0px;' +
+          'word-break: normal;' +
+          'word-wrap: normal;' +
+          'white-space: nowrap;'
         );
         element.html(textElem);
 
-
         function contentFilling(callback) {
 
-          var text = '';
-
-          if (implementationType === 'html') {
-            text = attrs.ngFiTextHtml || element.html() || '';
-          } else {
-            text = attrs.ngFiText || element.text() || '';
-          }
-
-          // Populating the DOM
-          textElem[implementationType](text);
+          var text = attrs.ngFiText || element.html() || '';
+          textElem.html(text);
 
           if (callback)
             callback();
@@ -90,9 +80,6 @@ angular.module('ng-fi-text', [])
             }
 
             textElem.css('font-size', newFontSize + 'px');
-            if (implementationType === 'html') {
-              textElem.children().css('font-size', newFontSize + 'px');
-            }
 
             window.setTimeout(function () {
 
@@ -131,7 +118,7 @@ angular.module('ng-fi-text', [])
               } else if (maxSize !== null && newFontSize > maxSize) {
                 newFontSize = maxSize;
               }
-              console.log(currLoop +': ' + diff + ' ' +newFontSize + ' ' + minSize + ' ' + maxSize );
+
               if (diff < 0 || diff > tolerance) {
                 grossCorrection(executionOdometer);
               } else {
