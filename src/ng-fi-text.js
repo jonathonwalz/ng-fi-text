@@ -75,7 +75,7 @@ angular.module('ng-fi-text', [])
 
           function grossCorrection(executionNumber) {
             if (currLoop > loopLimiter) {
-              onFinished(newFontSize);
+              onFinished(newFontSize, heightDiff);
               return;
             }
 
@@ -122,7 +122,7 @@ angular.module('ng-fi-text', [])
               if (diff < 0 || diff > tolerance) {
                 grossCorrection(executionOdometer);
               } else {
-                onFinished(newFontSize);
+                onFinished(newFontSize, heightDiff);
               }
             }, 0);
           } // grossCorrection
@@ -131,13 +131,12 @@ angular.module('ng-fi-text', [])
 
         function onStarted() {
           textElem.css('right', 'auto');
-          textElem.css('bottom', 'auto');
           textElem.css('visibility', 'hidden');
         }
 
-        function onFinished(finalFontSize) {
+        function onFinished(finalFontSize, heightDiff) {
           textElem.css('right', '0px');
-          textElem.css('bottom', '0px');
+          textElem.css('top', (heightDiff/2)+'px');
           textElem.css('visibility', 'visible');
         }
 
@@ -155,7 +154,7 @@ angular.module('ng-fi-text', [])
         });
 
         // update on values changing
-        scope.$watchGroup(['ngFiText', 'ngFiTextHtml'], function (newValue, oldValue) {
+        scope.$watchGroup(['ngFiText'], function (newValue, oldValue) {
           contentFilling(executeMagic);
         });
 
