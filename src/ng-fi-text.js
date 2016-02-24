@@ -12,13 +12,10 @@ angular.module('ng-fi-text', [])
         }
 
         // Options
-        var rotate = attrs.ngFiTextRotate || false;
-        var maxFontSize = attrs.ngFiTextMaxFontSize || false;
         var implementationType = attrs.hasOwnProperty('ngFiTextHtml') ? 'html' : 'text';
 
-
         // Internal Options
-        var heightTolerance = 3;
+        var tolerance = 3;
         var fontSize = 10;
         var loopLimiter = 25; // higher is more accurate but increases process. Min 5~6
 
@@ -26,20 +23,14 @@ angular.module('ng-fi-text', [])
 
 
         // Creating the element
-        var rotateToAdd = rotate ? ' rotate(' + rotate + 'deg) ' : '';
         var textElem = angular.element('<div />').attr('style',
-          'word-wrap: break-word;' +
           'line-height: normal;' +
           'margin: 0px;' +
-            //'padding: 0px;'+
-          'position: absolute; ' +
+          'padding: 0px;'+
+          'position: absolute;' +
+          'text-align:center;' +
           'left:0px;' +
-          'right: 0px;' +
-          'top: 50%;' +
-          '-webkit-transform: translate(0%,-50%) ' + rotateToAdd + ';' +
-          '-moz-transform: translate(0%,-50%) ' + rotateToAdd + ';' +
-          '-ms-transform: translate(0%,-50%) ' + rotateToAdd + ';' +
-          'transform: translate(0%,-50%) ' + rotateToAdd + ';'
+          'top: 0px;'
         );
         element.html(textElem);
 
@@ -69,9 +60,13 @@ angular.module('ng-fi-text', [])
 
           var elementParent = textElem.parent();
           var elemParentHeight = elementParent.height();
+          var elemParentWidth = elementParent.width();
 
           var elemHeight;
+          var elemWidth;
           var heightDiff;
+          var widthDiff;
+          var diff;
 
           var baseCorrection = 10;
           var definitiveCorrection;
@@ -85,12 +80,8 @@ angular.module('ng-fi-text', [])
 
           var newFontSize = fontSize;
 
-          heightDiff = elemParentHeight - elemHeight;
-
-          var lastSameDirectionDiff = '', preLastSameDirectionDiff = '';
-          var lesserDiff = false;
-          var lesserSize = false;
-
+          var maxSize = null;
+          var minSize = 1;
 
           function grossCorrection(executionNumber) {
             if (currLoop > loopLimiter) {
@@ -110,48 +101,38 @@ angular.module('ng-fi-text', [])
               }
 
               elemHeight = textElem.height();
+              elemWidth = textElem.width();
               heightDiff = elemParentHeight - elemHeight;
+              widthDiff = elemParentWidth - elemWidth;
+              diff = widthDiff < 0 ? widthDiff : heightDiff;
 
+              direction = diff >= 0 ? 1 : -1;
 
-              if (heightDiff >= 0 && (heightDiff < lesserDiff || !lesserDiff )) {
-                lesserDiff = heightDiff;
-                lesserSize = newFontSize;
+              if (prevDirection) {
+                if (direction < 0 && (maxSize === null || maxSize > newFontSize)) {
+                  maxSize = newFontSize;
+                } else if (direction > 0 && (minSize === null || minSize < newFontSize)) {
+                  minSize = newFontSize;
+                }
               }
 
-
-              direction = heightDiff >= 0 ? 1 : -1;
-
-
               if (prevDirection && prevDirection !== direction) {
-
-                if (preLastSameDirectionDiff === heightDiff) {
-                  if (newFontSize !== lesserSize) {
-                    textElem.css('font-size', lesserSize + 'px');
-                    if (implementationType === 'html') {
-                      textElem.children().css('font-size', lesserSize + 'px');
-                    }
-                  }
-                  onFinished(newFontSize);
-                  return;
-
-                }
-
-                preLastSameDirectionDiff = lastSameDirectionDiff;
-                lastSameDirectionDiff = heightDiff;
-
                 currXLoop++;
                 correctionMultiplier = correctionMultiplier * ( 1 - 0.25 * currXLoop );
                 correctionMultiplier = correctionMultiplier < 0.05 ? 0.05 : correctionMultiplier;
               }
 
-
+              currLoop++;
               prevDirection = direction;
               definitiveCorrection = baseCorrection * correctionMultiplier * direction;
               newFontSize = newFontSize + definitiveCorrection;
-              currLoop++;
-
-
-              if (Math.abs(heightDiff) > heightTolerance) {
+              if (minSize !== null && newFontSize < minSize) {
+                newFontSize = minSize;
+              } else if (maxSize !== null && newFontSize > maxSize) {
+                newFontSize = maxSize;
+              }
+              console.log(currLoop +': ' + diff + ' ' +newFontSize + ' ' + minSize + ' ' + maxSize );
+              if (diff < 0 || diff > tolerance) {
                 grossCorrection(executionOdometer);
               } else {
                 onFinished(newFontSize);
@@ -162,14 +143,14 @@ angular.module('ng-fi-text', [])
         } // executeMagic
 
         function onStarted() {
+          textElem.css('right', 'auto');
+          textElem.css('bottom', 'auto');
           textElem.css('visibility', 'hidden');
         }
 
         function onFinished(finalFontSize) {
-          if (maxFontSize && finalFontSize > maxFontSize) {
-            textElem.css('font-size', maxFontSize + 'px');
-          }
-
+          textElem.css('right', '0px');
+          textElem.css('bottom', '0px');
           textElem.css('visibility', 'visible');
         }
 
@@ -196,8 +177,3 @@ angular.module('ng-fi-text', [])
       }
     };
   }]);
-
-
-
-
-
